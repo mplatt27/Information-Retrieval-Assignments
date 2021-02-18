@@ -1,0 +1,109 @@
+CS 6200 Information Retrieval
+Homework 1
+Melanie Platt
+February 12, 2021
+
+**********************************************************************
+
+Overall implementation description: 
+
+	Step 1: Create an index with Elasticsearch for all documents with indexer.py
+			a. Set up index with settings to remove stop words and stem words with english_stemmer
+			b. Read in each document and add to index with appropriate information (doc-id, text) using bulk add
+	Step 2: Run queries using various retireval models and compare results with query-processer.ipynb
+			a. Read in queries and anlayze them so that they are stemmed
+			b. Get all term vectors to store, before running RMs
+				i. Get all doc ids using search() and scroll() APIs
+				ii. Get a term vector for each doc using termvectors() API
+				iii. Save term vectors as a pickle so this step is not repeated for each model
+			c. General model implementation: Iterate over each doc in the corpus; for each doc, iterate over each query, and each query word. For each query-document combination calculate the score as determiend by that model. Add to dictionary that saves and adds up scores for each combination. Return the ultimate scores for each document.
+			d. Sort the scores and take the first 1000 per query. Write to an output file. 
+	Step 3: Evaluate using trec_eval. Adjust queries if needed and iterate until reaching the precision threshhold.
+	Step 4: Create two pseudo-relevance feedback functions.
+		a. Get pseudo relevance feedback based on the output of each model individually.
+			i. Get top X documents for each query
+			ii. Get tfidf score for each term in those documents
+			iii. Take top X scores from those terms and append them to the query
+			iv. Run the model again with extended query
+		b. Get pseudo relevance feedback based on the queries themsselves. 
+			i. Use es aggs "significant terms" API to get most significant terms for each query word (for each query individually)
+			ii. For each query, find top x terms (top being those that occur for more than one word in the query, if possible).
+			iii. Eliminate any that are stop words.
+			iv. Score those most frequent terms using IDF scores. Take the top X (2) terms from the IDF scoring.
+			v. Add those words to the queries and run the models again. 
+
+**********************************************************************
+
+Uninterpolated Mean Average Precision:
+			
+		Model-only	P-R 1	P-R 2
+
+ES-Built in	.2709		.2503	.1702
+
+Okapi TF   	.2098		.2509	.1433
+
+TF-IDF		.2785		.2774	.1507
+
+Okapi BM25    	.2812       	.2773	.1793
+
+Laplace		.2054		.2363	.1367
+
+Jelinek-Mercer	.2419		.2282	.1645
+
+* Okapi BM25 meets the precision threshhold for the vector space or probabilistic models (.28)
+
+* Jelinek-Mercer meets the precision threshhold for the langauge models (.22)
+
+* Okapi TF and Laplace improve for pseudo relevance (P-R) feedback for the first model. The second PR model does poorly
+(PR1 is getting top terms from each doc for each query seperatly using tfidf scores; PR2 uses
+significant terms API and idf scores). 
+
+**********************************************************************
+
+Precision at 10 documents
+
+		Model-only	P-R 1	P-R 2
+
+Okapi TF   	.3920		.3840	.2440
+
+TF-IDF		.4080		.4080	.3120
+
+Okapi BM25    	.4160      	.4080	.3160
+
+Laplace		.4320		.3880	.2840
+
+Jelinek-Mercer	.3440		.3440	.2360
+
+
+Precision at 30 documents
+
+		Model-only	P-R 1	P-R 2
+
+Okapi TF   	.3173		.3467	.2213
+
+TF-IDF		.3547		.3520	.2613
+
+Okapi BM25    	.3640       	.3547	.2653
+
+Laplace		.3333		.3507	.2587
+
+Jelinek-Mercer	.3053		.2733	.2227
+
+**********************************************************************
+
+Manually comparision of the top 10 docs for a random query (85)
+
+rank	ES Built-in	TF-IDF		Okapi BM25	Laplace 
+1	AP890107-0129	AP890107-0129	AP890107-0129	AP890710-0011
+2	AP890220-0143	AP890518-0050	AP890518-0050	AP890704-0150
+3	AP890518-0050	AP890112-0180	AP890220-0143	AP890223-0032
+4	AP890516-0072	AP890223-0032	AP890516-0072	AP890620-0122
+5	AP890223-0032	AP891111-0095	AP890112-0180	AP891013-0120
+6	AP890112-0180	AP890220-0143	AP890223-0032	AP890518-0050
+7	AP890131-0078	AP890131-0078	AP891111-0095	AP890417-0030
+8	AP891111-0095	AP890516-0072	AP890131-0078	AP890105-0199
+9	AP890503-0199	AP890108-0030	AP890503-0199	AP890710-0119
+10	AP891013-0120	AP890710-0011	AP890125-0007	AP890516-0199
+
+
+**********************************************************************
