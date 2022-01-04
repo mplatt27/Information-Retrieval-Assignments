@@ -1,0 +1,326 @@
+#!/usr/bin/python
+
+"""
+
+ The following script is a trec evaluation for queries on a corpus,
+ using a qrel file providing the relevance scores to documents and 
+ a results file providing the documents and thier scores returned by
+ some retrival algorithm. 
+
+ The script outputs the average precision, r-precision, and nDCG scores
+ for all queries, as well as each query if the [-q] input value is given.
+
+ To run on the command line:
+
+ python trec_eval_run [-q] <qrel_file> <results_file>
+
+ @author: Melanie Platt
+ 4/10/2021
+
+"""
+
+import sys
+from collections import OrderedDict
+import math
+import pickle
+
+# initialize structures to hold the relevant documents and the documents
+# that were returned from the retireval algorithm
+RELEVANT_DOCS = OrderedDict()
+RETURNED_DOCS = OrderedDict()
+
+
+# save all documents that are relevant using the qrel file
+def parse_qrel(q_path):
+	with open(q_path, 'r') as f:
+		for line in f:
+			l = line.split(" ")
+			query = l[0]
+			doc = l[2]
+			score = int(l[3])
+			if score != 0:
+				if query in RELEVANT_DOCS:
+					RELEVANT_DOCS[query].append(doc)
+				else:
+					RELEVANT_DOCS[query] = [doc]
+	f.close()
+
+
+# save all documents that were returned using the results file
+def parse_results(r_path):
+	with open(r_path, 'r') as f:
+		for line in f:
+			l = line.split(" ")
+			query = l[0]
+			doc = l[2]
+			if query in RETURNED_DOCS:
+				RETURNED_DOCS[query].append(doc)
+			else:
+				RETURNED_DOCS[query] = [doc]
+	f.close()
+
+
+def evaluate(q):
+
+	# get the number of queries that we have
+	num_queries = len(RETURNED_DOCS)
+
+	# maps the query id --> metrics for that query
+	# holds R-Precision, Avg Precision, and nDCG
+	metrics = {}
+
+	# the values that we want to see metrics at
+	k_values = [5, 10, 20, 50, 100]
+
+	# store the metrics at each k value for each query
+	# maps qid --> dict of k metrics for that query
+	k_overall_metrics = OrderedDict()
+
+	# create structure to store precision at standard recall levels
+	# maps query id --> dict (recall level --> avg precision at that level)
+	graph_details = {}
+	#recall_levels = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
+	# iterate over each query that we have 
+	for q_id, docs in RETURNED_DOCS.items():
+		
+		# gather the metrics just for this query (averaged over doc)
+		query_metrics = {}
+
+		# get num of relevant docs for this query
+		relevant_docs = RELEVANT_DOCS[q_id]
+		n = len(relevant_docs)
+
+		# keep track of the rank of the doc that we are on
+		rank = 1
+
+		# the current number of docs we have retrieved that are relevant
+		# at the rank we are on
+		retrieved_and_relevant = 0
+
+		# keep track of the metrics at each k value for this current doc
+		# maps k value --> percision, recall, f1 at that value
+		k_query_metrics = OrderedDict()
+		for each in k_values:
+			k_query_metrics[each] = {}
+
+		# initialize the sum of prevision for this query (to calc avg later)
+		precision_sum = 0
+
+		# initialize a recall level to store precision for this query
+		graph_details[q_id] = OrderedDict()
+		# for each in recall_levels:
+		# 	graph_details[q_id][each] = -1
+
+		# initialize number of docs that are relevant within the first
+		# n ranks
+		r = 0
+
+		# initialize a list of whether or not the doc is relevant
+		relevance = []
+
+		# iterate over each doc (they are in order of rank already)	
+		for doc in docs:
+
+			# keep track of metrics at each k value for this doc
+			# maps rank (k value) to the metrics at that rank
+			k_metrics = OrderedDict()
+
+			# check if it is relevant
+			is_relevant = 0
+			if doc in relevant_docs:
+				is_relevant = 1
+				retrieved_and_relevant += 1
+
+			# add relevance to list to track
+			relevance.append(is_relevant)
+
+			# calculate precision and recall for doc at this rank
+			precision = retrieved_and_relevant / rank
+			if n == 0:
+				recall = 0
+			else:
+				recall = retrieved_and_relevant / n
+			if retrieved_and_relevant == 0:
+				f1 = 0
+			else:
+				f1 = (2 * precision * recall) / (precision + recall)
+
+			# if we are on a k value
+			if rank in k_values:
+				k_query_metrics[rank]['Precision'] = precision
+				k_query_metrics[rank]['Recall'] = recall
+				k_query_metrics[rank]['F1'] = f1
+
+			# increment average prevision if we have a relevant doc
+			if is_relevant:
+				precision_sum += precision
+				graph_details[q_id][recall] = precision
+				# if recall in recall_levels:
+				# 	graph_details[q_id][recall] = precision
+
+			# if we have gone through n documents, set r
+			if rank == n:
+				r = retrieved_and_relevant
+
+			# increment rank
+			rank += 1
+
+		# after seeing all docs in query, save those metrics at each k value
+		k_overall_metrics[q_id] = k_query_metrics
+
+		# calculate average precision
+		if n == 0:
+			avg_precision = 0
+		else:
+			avg_precision = precision_sum / n
+		query_metrics['Average Precision'] = avg_precision
+
+		# calculate r-prevision
+		r_precision = r / n
+		query_metrics['R-Precision'] = r_precision
+
+		# calculate nDCG
+		dcg = 0
+		i = 1
+		for score in relevance:
+			if i == 1:
+				dcg += score
+			else:
+				dcg += score / math.log(i)
+			i += 1
+
+		idcg = 0
+		i = 1
+		sorted_relevance = sorted(relevance, reverse=True)
+		for score in sorted_relevance:
+			if i == 1:
+				idcg += score
+			else:
+				idcg += score / math.log(i)
+			i += 1
+
+		if idcg == 0:
+			nDCG = 0
+		else:
+			nDCG = dcg / idcg
+
+		query_metrics['nDCG'] = nDCG
+
+		# add to dictionaries that stor the query info
+		metrics[q_id] = query_metrics
+
+		# if q == 1 print info for this query
+		if q:
+			print("Metrics for Query #: ", q_id)
+			print("\n")
+			print("R-Precision is: {:.4f}".format(r_precision))
+			print("Average Precision is: {:.4f}".format(avg_precision))
+			print("dDCG is: {:.4f}".format(nDCG))
+			print("\n")
+			print("Precision@ values: ")
+			print("Precision at 5: {:.4f}".format(k_query_metrics[5]['Precision']))
+			print("Precision at 10: {:.4f}".format(k_query_metrics[10]['Precision']))
+			print("Precision at 20: {:.4f}".format(k_query_metrics[20]['Precision']))
+			print("Precision at 50: {:.4f}".format(k_query_metrics[50]['Precision']))
+			print("Precision at 100: {:.4f}".format(k_query_metrics[100]['Precision']))
+			print("\n")
+			print("Recall@ values: ")
+			print("Recall at 5: {:.4f}".format(k_query_metrics[5]['Recall']))
+			print("Recall at 10: {:.4f}".format(k_query_metrics[10]['Recall']))
+			print("Recall at 20: {:.4f}".format(k_query_metrics[20]['Recall']))
+			print("Recall at 50: {:.4f}".format(k_query_metrics[50]['Recall']))
+			print("Recall at 100: {:.4f}".format(k_query_metrics[100]['Recall']))
+			print("\n")
+			print("F1@ values: ")
+			print("F1 at 5: {:.4f}".format(k_query_metrics[5]['F1']))
+			print("F1 at 10: {:.4f}".format(k_query_metrics[10]['F1']))
+			print("F1 at 20: {:.4f}".format(k_query_metrics[20]['F1']))
+			print("F1 at 50: {:.4f}".format(k_query_metrics[50]['F1']))
+			print("F1 at 100: {:.4f}".format(k_query_metrics[100]['F1']))
+			print("\n")
+			print("*******************************************************************")
+		
+
+	# pickle graph details for later
+	with open('graph_details.pickle', 'wb') as handle:
+		pickle.dump(graph_details, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+	# get average values for all queries
+	total_avg_precision = 0
+	total_r_precision = 0
+	total_dDCG = 0
+	total_k_metrics = OrderedDict()
+
+	for qu, m in metrics.items():
+		total_avg_precision += m['Average Precision']
+		total_r_precision += m['R-Precision']
+		total_dDCG += m['nDCG']
+	total_avg_precision = total_avg_precision / num_queries
+	total_r_precision = total_r_precision / num_queries
+	total_dDCG = total_dDCG / num_queries
+
+	total_k_metrics = OrderedDict() # maps rank --> p, r, f1
+	for each in k_values:
+		total_k_metrics[each] = {'Precision': 0, 'Recall': 0, 'F1': 0}
+	for qu, m in k_overall_metrics.items():
+		for rnk, m_rank in m.items():
+			total_k_metrics[rnk]['Precision'] += m_rank['Precision']
+			total_k_metrics[rnk]['Recall'] += m_rank['Recall']
+			total_k_metrics[rnk]['F1'] += m_rank['F1']
+
+	# print values averaged for all queries
+	print("Metrics for all queries (averaged): ")
+	print("\n")
+	print("R-Precision is: {:.4f}".format(total_r_precision))
+	print("Average Precision is: {:.4f}".format(total_avg_precision))
+	print("dDCG is: {:.4f}".format(total_dDCG))
+	print("\n")
+	print("Precision@ values: ")
+	print("Precision at 5: {:.4f}".format(total_k_metrics[5]['Precision'] / num_queries))
+	print("Precision at 10: {:.4f}".format(total_k_metrics[10]['Precision'] / num_queries))
+	print("Precision at 20: {:.4f}".format(total_k_metrics[20]['Precision'] / num_queries))
+	print("Precision at 50: {:.4f}".format(total_k_metrics[50]['Precision'] / num_queries))
+	print("Precision at 100: {:.4f}".format(total_k_metrics[100]['Precision'] / num_queries))
+	print("\n")
+	print("Recall@ values: ")
+	print("Recall at 5: {:.4f}".format(total_k_metrics[5]['Recall'] / num_queries))
+	print("Recall at 10: {:.4f}".format(total_k_metrics[10]['Recall'] / num_queries))
+	print("Recall at 20: {:.4f}".format(total_k_metrics[20]['Recall'] / num_queries))
+	print("Recall at 50: {:.4f}".format(total_k_metrics[50]['Recall'] / num_queries))
+	print("Recall at 100: {:.4f}".format(total_k_metrics[100]['Recall'] / num_queries))
+	print("\n")
+	print("F1@ values: ")
+	print("F1 at 5: {:.4f}".format(total_k_metrics[5]['F1'] / num_queries))
+	print("F1 at 10: {:.4f}".format(total_k_metrics[10]['F1'] / num_queries))
+	print("F1 at 20: {:.4f}".format(total_k_metrics[20]['F1'] / num_queries))
+	print("F1 at 50: {:.4f}".format(total_k_metrics[50]['F1'] / num_queries))
+	print("F1 at 100: {:.4f}".format(total_k_metrics[100]['F1'] / num_queries))
+	print("\n")
+	print("*******************************************************************")
+
+
+
+def main(argv):
+	try:
+		if len(sys.argv) == 3:
+			option = 0
+			qrel_path = sys.argv[1]
+			results_path = sys.argv[2]
+		else:
+			option = 1
+			qrel_path = sys.argv[2]
+			results_path = sys.argv[3]
+
+		parse_qrel(qrel_path)
+		parse_results(results_path)
+		evaluate(option)
+
+	except:
+		print("Use the input format: ")
+		print("<trec file> [-q] <qrel file> <results file>")
+
+
+if __name__ == "__main__":
+   main(sys.argv) 
+   

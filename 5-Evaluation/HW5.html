@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Content-Type" content="text/html">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>CS 6200 | Information Retrieval</title>
+	<meta name="keywords" content="">
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+		integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+	</script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+		integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous">
+	</script>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+		integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+		integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous">
+	</script>
+
+	<link href="../assets/style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+	
+	<div id="main-content" class="container">
+		<div class="container">
+			<div class="row">
+			  <div class="col-md-12">
+				<div>
+				  <article id="content">
+					<h3 style="background-color: white; color: black;
+					  font-family: AppleGothic;"><big><big><big><small>CS6200
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+							  Information Retrieval<br>
+							</small> <small><font color="#3333ff">Homework5:
+	
+	
+	
+								Relevance Assessments, IR Evaluation</font></small></big></big></big></h3>
+					<hr>
+					<h1 id="objective">Objective</h1>
+					<p>In this assignment, you will continue the work from
+					  previous HW by evaluating your vertical search engine.
+					  You will continue to work within the team you formed
+					  earlier.
+					  <!-- Please read these instructions carefully: although you are working with teammates, you will be graded individually for most of the assignment. --></p>
+					<p>You will be given queries for your topical crawl.
+					  Manual relevance assessments have to be collected,
+					  using your vertical search engine and a web interface.</p>
+					<p>You will have to code up the IR evaluation measures,
+					  essentially rewriting trec<em>eval. It is ok to look
+						at the provided trec</em>eval code, but you have to
+					  write your own.</p>
+					<p><br>
+					</p>
+					<h1 id="part1_assessments_and_ir_evaluation">Assessments
+					  and IR Evaluation.</h1>
+					<h2 id="obtaining_queries">Obtaining queries</h2>
+					<p>Each team will be assigned 3-4 queries specific to
+					  the topic you worked on HW3. The queries are going to
+					  show up in your Dropbox team file, or you can obtain
+					  them from the TAs.</p>
+					<h1 id="assessment_graphical_interface">Assessment
+					  graphical interface</h1>
+					<p>In order to assess relevance of documents, you will
+					  have to create a web interface that displays the
+					  topic/query, and a given document list. Each URL in
+					  the list should be clickable to lead to the document
+					  text, pooled either from ES raw-html field or live
+					  from original URL. You would probably take as a start
+					  the web GUI you used for vertical search in HW3. </p>
+					<p>The interface has to contain an input fields for each
+					  URL/snippet in order for the assessor to input a
+					  3-scale grade “non-relevant”, “relevant”, “very
+					  relevant” (or 0,1,2). The can be an input checkboxes,
+					  radio boxes, dropdown list, text input box, etc. The
+					  interface should also record the assessor ID (by
+					  name). You can add a “submit” button somewhere, and a
+					  count of how many documents have been assessed.</p>
+					<p>The input assessments should be stored in a QREL file
+					  (txt format) as </p>
+					<p> QueryID AssessorID DocID Grade </p>
+					<p> QueryID AssessorID DocID Grade </p>
+					<p>….. </p>
+					<p>where DocID is the canonical URL, AssessorID is your
+					  name (no spaces, like "Michael_Jordan"), Grade is one
+					  of {0,1,2}. You can temporarily store information in
+					  ES or a database if that is easier for you.</p>
+					<p>Each student has to use his/her own eval interface, even though in HW3 team members could share the vertical search. While not ideal, we are aware of some students are
+					  not being versed in Web-Development. So we will allow
+					  for the input to be manual directly to the QREL file.
+					  Thats is, you will use the vertical search web
+					  interface from HW3 with no input fields, and manually
+					  copy-paste the IDs into the qrel together with the
+					  assigned relevance grade.</p>
+					<p>You will have to demo your assessment process (the
+					  interface and the recording of grades).</p>
+					<h1 id="manual_assessments">Manual assessments.</h1>
+					<p>Each student has to manually assess about 200
+					  documents for each query. So if your team has 3
+					  queries, each student will assess 600 documents, and
+					  each document-per-query will be assessed three times
+					  (assuming three team members). </p>
+					<p>The QREL file should record all the assessments and
+					  be placed in your Dropbox folder when you are done.</p>
+					<h1 id="write_your_own_trec_eval">Write your own
+					  trec_eval</h1>
+					<p>Write a program that replicates trec_eval
+					  functionality. Input : a ranked list file and QREL
+					  file, both in TREC format. Both files can contain
+					  results and assessments for multiple queryIDs.</p>
+					<p>First, sort docIDS per queryID by score. Then for
+					  each query compute R-precision, Average Precision,
+					  nDCG, precision@k and recall@k and F1@k (k=5,10, 20,
+					  50, 100). Average these numbers over the queryIDs. If
+					  run with -q option your program should display the
+					  measures for each queryID before displaying the
+					  averages.</p>
+					<p>Run your trec<em>eval on HW1 runs with the qrel
+						provided to confirm that it gives the same values as
+						the provided trec</em>eval.</p>
+					<p>Run your trec_eval on the HW3 vertical search engine.</p>
+					<h2 id="precision_recall_curves">Precision-Recall Curves</h2>
+					<p>For each one of the HW4 queries, create a
+					  precision-recall plot. </p>
+					<h1 id="extra_credit">Extra Credit</h1>
+					<p>These extra problems are provided for students who
+					  wish to dig deeper into this project. Extra credit is
+					  meant to be significantly harder and more open-ended
+					  than the standard problems. We strongly recommend
+					  completing all of the above before attempting any of
+					  these problems.</p>
+					<p>Points will be awarded based on the difficulty of the
+					  solution you attempt and how far you get. You will
+					  receive no credit unless your solution is “at least
+					  half right,” as determined by the graders.</p>
+					<h2 id="ec1">EC1:</h2>
+					<p>A nice, fast, web interface for evaluation, will get
+					  you EC points.</p>
+					<p>Also EC points will be given for highlighting query
+					  terms in the document source when the entire document
+					  is displayed. </p>
+					<br>
+					<!-- ### Deliverables
+	
+	1. Your group should submit a compressed file containing the TREC and WARC formatted files you crawled and the merged link graph from your individual crawls.
+	2. You should each submit the code for your own crawler. -->
+					<h3 id="rubric">Rubric</h3>
+					<dl class="dl-horizontal">
+					  <dt>15 points</dt>
+					  <dd>A proper interface for assessment, including
+						keeping track of assessments</dd>
+					  <dt>30 points</dt>
+					  <dd>About 600 manual assessments, for 3 or 4 queries
+						on your topic ( qrel file in Dropbox)</dd>
+					  <dt>30 points</dt>
+					  <dd>Your trec_eval</dd>
+					  <dt>25 points</dt>
+					  <dd>Precision Recall curves<br>
+					  </dd>
+					  <dt><br>
+					  </dt>
+					</dl>
+				  </article>
+				</div>
+			  </div>
+			</div>
+		  </div>
+	</div>
+	<footer>
+		<hr>
+		<center>
+			Ⓒ Northeastern University, 2020, all rights reserved<br><br>
+		</center>
+	</footer>
+</body>
+
+</html>
