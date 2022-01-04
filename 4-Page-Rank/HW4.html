@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Content-Type" content="text/html">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>CS 6200 | Information Retrieval</title>
+	<meta name="keywords" content="">
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+		integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+	</script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+		integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous">
+	</script>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+		integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+		integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous">
+	</script>
+
+	<link href="../assets/style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+
+	<div id="main-content" class="container">
+		<div class="container">
+			<div class="row">
+			  <div class="col-md-12">
+				<div>
+				  <article id="content">
+					<h3 style="background-color: white; color: black;
+					  font-family: AppleGothic;"><big><big><big><small>CS6200
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+							  Information Retrieval<br>
+							</small> <small><font color="#3333ff">Homework4:
+	
+	
+	
+	
+	
+	
+	
+	
+	
+								Web graph computation<br>
+							  </font></small></big></big></big></h3>
+					<!-- # TODO
+	
+	* Clean up language about team
+	* Have students dedup by canonical URL and don’t index same doc twice — use hashcode of url in _id
+	* Index to elasticsearch right away, store both raw and clean versions. No output files.
+	* Submit merged index — use distinct cluster name for each group and merge via ES
+	* Team should share canonicalization code
+	* submit “top 3 topics” early to pick one or get assigned one -->
+					<h1 id="objective">Objective</h1>
+					&nbsp; Compute link graph measures for each page crawled
+					using the adjacency matrix. While you have to use the
+					merged team index, this assignment is individual (can
+					compare with teammates the results)<br>
+					<h1 id="objective">Page Rank - crawl <br>
+					</h1>
+					<p>Compute the PageRank of every page in your crawl
+					  (merged team index). You can use any of the methods
+					  described in class: random walks (slow), transition
+					  matrix, algebraic solution etc. List the top 500 pages
+					  by the PageRank score. You can take a look at this <a href="http://www.ccs.neu.edu/course/cs6200f13/proj1.html">PageRank
+						pseudocode</a> (for basic iteration method) to get
+					  an idea<br>
+					</p>
+					<h1 id="objective">Page Rank - other graph <br>
+					</h1>
+					Get the graph linked by the in-links in file
+					resources/wt2g_inlinks.txt<br>
+					Compute the PageRank of every page. List the top 500
+					pages by the PageRank score; also display inlink and outlink counts for each page<br>
+				Explain in few sentences why some pages have a higher PageRank but a smaller inlink count. In particular for finding the explanation: pick such case pages and look at other pages that point to them.  
+					<p> </p>
+					<h1 id="objective">HITS- crawl<br>
+					</h1>
+					<p>Compute Hubs and Authority score for the pages in the
+					  crawl (merged team index)<br>
+					</p>
+					<ol>
+					</ol>
+					A. Create a root set: Obtain the root set of about 1000 documents
+					by ranking all pages using an IR function (e.g. BM25, ES
+					Search). You will need to use your topic as your query<br>
+					<br>
+					B. Repeat few two or three time this expansion to get a
+					base set of about 10,000 pages: <br>
+					
+					  <li>For each page in the set, add all pages that the
+						page points to</li>
+					  <li>For each page in the set, obtain a set of pages
+						that pointing to the page
+					  <ul>
+							  <li> if the size of the set is less than or
+								equal to d, add all pages in the set to the
+								root set </li>
+							  <li> if the size of the set is greater than d,
+								add an RANDOM (must be random) set of d
+								pages from the set to the root set </li>
+							  <li> Note: The constant d can be 200. The idea
+								of it is trying to include more possibly
+								strong hubs into the root set while
+								constraining the size of the root size. </li>
+							</ul>
+						  </li>    
+					  
+					
+					<p>C. Compute HITS. For each web page, initialize its
+					  authority and hub scores to 1. Update hub and
+					  authority scores for each page in the base set until
+					  convergence </p>
+					
+						<ul>
+						  <li>Authority Score Update: Set each web page's
+							authority score in the root set to the sum of
+							the hub score of each web page that points to it</li>
+						  <li>Hub Score Update: Set each web pages's hub
+							score in the base set to the sum of the
+							authority score of each web page that it is
+							pointing to</li>
+						  <li> After every iteration, it is necessary to
+							normalize the hub and authority scores. Please
+							see the lecture note for detail. </li>
+						</ul>
+					  
+					  
+				Create one file for top 500 hub webpages, and one
+						file for top 500 authority webpages.
+						  The format for both files should be: 
+					  <li>  [webpageurl][tab][hub/authority score]\n</li>
+						
+					  
+					  <br>
+					
+					<h1 id="objective">EC1</h1>
+					<p>Implement a Topical PageRank by designing categories
+					  appropriate for your crawl (merged team index)<br>
+					</p>
+					<h1 id="objective">EC2</h1>
+					<p>Implement SALSA scoring on your crawl (merged team
+					  index) and compare with HITS<br>
+					</p>
+					<p><br>
+					</p>
+					<!-- ### Deliverables
+	
+	1. Your group should submit a compressed file containing the TREC and WARC formatted files you crawled and the merged link graph from your individual crawls.
+	2. You should each submit the code for your own crawler. -->
+					<h3 id="rubric">Rubric</h3>
+					<dl class="dl-horizontal">
+					  <dt>15 points</dt>
+					  <dd>Page Rank on&nbsp; wt2g_inlinks data<br>
+					  </dd>
+					  <dt>30 points</dt>
+					  <dd>PageRank on crawled data<br>
+					  </dd>
+					  <dt>30 points</dt>
+					  <dd>HITS on side data<br>
+					  </dd>
+					</dl>
+				  </article>
+				</div>
+			  </div>
+			</div>
+		  </div>
+	</div>
+	<footer>
+		<hr>
+		<center>
+			Ⓒ Northeastern University, 2020, all rights reserved<br><br>
+		</center>
+	</footer>
+</body>
+
+</html>
