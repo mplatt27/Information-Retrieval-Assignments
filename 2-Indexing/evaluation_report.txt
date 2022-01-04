@@ -1,0 +1,68 @@
+CS 6200 Information Retrieval
+Homework 2
+Melanie Platt
+March 5, 2021
+
+**********************************************************************
+
+Index sizes:
+
+Compressed (stemmed):
+* Doc_hashes = 2,044 KB
+* Catalog = 2,674 KB
+* Inverted Index = 72,040 KB
+* Total = 76,758 KB (~76 MB)
+
+Uncompressed stemmed:
+* Doc_hashes = 2,044 KB
+* Catalog = 2,724 KB
+* Inverted Index = 150,720 KB
+* Total = 155,488 KB (~155 MB)
+
+Uncompressed unstemmed:
+* Doc_hashes = 2,044 KB
+* Catalog = 3,667 KB
+* Inverted Index = 155,532 KB
+* Total = 161,243 KB (~161 MB)
+
+**********************************************************************
+
+Uninterpolated Mean Average Precision:
+
+_________________________________________________________
+Stemmed:
+		HW2	HW1
+
+Okapi-TF	.2065	.2098 *Slightly worse on HW2
+
+Okapi-BM25	.2840	.2812 *Slightly better on HW2
+
+Laplace 	.2027	.2054 *Slightly worse on HW2
+
+Proximity	.2327 	n/a * d=2
+
+_________________________________________________________
+Unstemmed:
+		HW2	HW1
+
+Okapi-TF	.1469	n/a
+
+Okapi-BM25	.1664	n/a
+
+Laplace 	.1219	n/a
+
+Proximity	.1343	n/a * d=2
+
+_________________________________________________________
+Compressed (stemmed):
+
+Okapi-TF	.2065 * Matches precision for uncompressed index
+
+
+
+**********************************************************************
+Performance requirements:
+- No more than 1000 documents are kept in memory during indexing
+- Linear merge is used to merge all partical indicies together
+- Full index is stored in three files: catalog, index, and map of doc id's
+- When using retrieval models, only the current term's information is accessed from the inverted index
