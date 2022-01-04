@@ -1,0 +1,264 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Content-Type" content="text/html">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>CS 6200 | Information Retrieval</title>
+	<meta name="keywords" content="">
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+		integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+	</script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+		integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous">
+	</script>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+		integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+		integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous">
+	</script>
+
+	<link href="../assets/style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+
+	<div id="main-content" class="container">
+		<div class="container">
+			<div class="row">
+			  <div class="col-md-12">
+				<div>
+				  <article id="content">
+					<h3 style="background-color: white; color: black;
+					  font-family: AppleGothic;"><big><big><big><small>CS6200
+	
+	
+	
+	
+	
+	
+	
+	
+							  Information Retrieval<br>
+							</small> <small><font color="#3333ff">Homework7:
+	
+	
+	
+	
+	
+	
+	
+	
+								Unigram/Bigram Classifier, Spam&nbsp; </font></small></big></big></big></h3>
+					<hr>
+					<h1 id="objective">Objective</h1>
+					<p>Build a Spam Classifier using Machine Learning and
+					  ElasticSearch.</p>
+					<h1 id="data">Data</h1>
+					<p>Consider the trec07_spam set of documents annotated
+					  for spam, available “data resources”. <br>
+					  First read and accept agreement at <a href="http://plg.uwaterloo.ca/%7Egvcormac/treccorpus07/">http://plg.uwaterloo.ca/~gvcormac/treccorpus07/</a>.
+					  Then download the 255 MB Corpus (trec07p.tgz). The
+					  html data is in data/; the labels ("spam" or "ham")
+					  are in full/.</p>
+					<p>You have to think a bit about storage (recommended ElasticSearch, but not required). Definitely use
+					  library to clean the html into plain text before storage. You
+					  dont have to do stemming or skipping stopwords (up to
+					  you); eliminating some punctuation might be useful. <br>
+					  <b>Cleaning Data is Required</b>: By "unigram" we mean
+					  an English word, so as part of reading/processing data
+					  there will be a filter step to remove anything that
+					  doesnt look like an English word or small number. Some
+					  mistake unigrams passing the filter are acceptable, if
+					  they look like words (e.x. "artist_", "newyork",
+					  "grande") as long as they are not overwhelming the set
+					  of valid unigrams. You can use any
+					  library/script/package for cleaning, or share your
+					  cleaning code (<i>but only the cleaning code</i>) with
+					  the other students.<br>
+					  Make sure to have a field “label” with values “yes” or
+					  “no” (or "spam"/"ham") for each document.<br>
+					</p>
+					<p>Partition the spam data set into TRAIN 80% and TEST
+					  20%. One easy way to do so is to add to each document
+					  in ES a field "split" with values either "train" or
+					  "test" randomly, following the 80%-20% rule. Thus
+					  there will be 2 feature matrices, one for training and
+					  one for testing (different documents, same exact
+					  columns/features). The spam/ham distribution is
+					  roughly a third ham and two thirds spam; you should
+					  have a similar distribution in both TRAIN and TEST
+					  sets.<br>
+					</p>
+					<p><b></b><br>
+					</p>
+					<h1 id="spam_features">Part1: Manual Spam Features</h1>
+					<p>Trial A. Manually create a list of ngrams (unigrams, bigrams,
+					  trigrams, etc) that you think are related to spam. For
+					  example : “free” , “win”, “porn”, “click here”, etc.
+					  These will be the features (columns) of the data
+					  matrix. <br>
+				
+			Trial B. Instead of using your unigrams, use the ones from <a href="https://course.ccs.neu.edu/cs6200f20/assets/uploads/spam_words.html">this list</a>; rerun the training and testing.<br>
+					</p>
+					<p>You will have to use ElasticSearch querying
+					  functionality in order to create feature values for
+					  each document, for each feature. There are ways to ask
+					  ES to give all matches (aka feature values) for a
+					  given ngram, so you dont have to query (ngram, doc)
+					  for all docs separately.<br>
+				If you dont use ES, you will have to detail to TAs how do you match unigrams across documents for values (it should be similar to HW2 indexing basic procedure)
+					</p>
+					<p>For part 1, you can use a full matrix since the size
+					  wont be that big (docs x features). However, for part
+					  2 you will have to use a sparse matrix, since there
+					  will be a lot more features.<br>
+					</p>
+					<h3 id="train_a_learning_algorithm">Train a learning
+					  algorithm</h3>
+					<p>The label, or outcome, or target are the spam
+					  annotation “yes” / “no” or you can replace that with
+					  1/0.</p>
+					<p>Using the “train” queries static matrix, train a
+					  learner to compute a model relating labels to the
+					  features on TRAIN set. You can use a learning library
+					  like <a href="http://www.scipy.org">SciPy/NumPy</a>,
+					  <a href="https://github.com/scottjulian/C4.5">C4.5</a>,
+					  <a href="http://www.cs.waikato.ac.nz/ml/weka/">Weka</a>,
+					  <a href="http://www.csie.ntu.edu.tw/%7Ecjlin/liblinear/">LibLinear</a>,
+					  <a href="http://svmlight.joachims.org">SVM Light</a>,
+					  etc. The easiest models are linear regression and
+					  decision trees.</p>
+					<h3 id="test_the_spam_model">Test the spam model</h3>
+					<p>Test the model on TEST set. You will have to create a
+					  testing data matrix with feature values in the same
+					  exact way as you created the training matrix: use
+					  ElasticSearch (or as approrpiate for your storage) to query for your features, use the
+					  scores are feature values.Remember that features have to be consistent across train and test data. </p>
+					<ol>
+					  <li>Run the model to obtain scores</li>
+					  <li>Treat the scores as coming from an IR function,
+						and rank the documents</li>
+					  <li>Display first few “spam” documents and visually
+						inspect them. You should have these ready for demo.
+						<em>IMPORTANT</em> : Since they are likely to be
+						spam, if you display these in a browser, you should
+						turn off javascript execution to protect your
+						computer.</li>
+				</ol>	  
+				
+				  <h3 id="3_models">Train/Test 3 Algorithms  </h3>
+				  <ol>	  
+					  <li>(1) decision tree-based </li>  
+						  <li>(2) regression-based </li> 
+							  <li>(3) Naive-Bayes</li> 
+					</ol>
+					<h1 id="extra_credit"><br>
+					</h1>
+					<h1 id="extra_credit">Part 2: All unigrams as features (MS students only)<br>
+					</h1>
+					<p>A feature matrix should contain a column/feature for
+					  every unigram extracted from training documents. You
+					  will have to use a particular data format described in
+					  class (<a href="http://www.ccs.neu.edu/home/vip/teach/IRcourse/6_ML/lecture_notes/Chengs_demo/Cheng_note_072115.txt">note</a>,
+					  <a href="http://www.ccs.neu.edu/home/vip/teach/IRcourse/6_ML/lecture_notes/Chengs_demo/imdb_toy.zip">toy
+	
+	
+	
+	
+						example</a>), since the full matrix becomes too big.
+					  Write the matrix and auxiliary files on disk.&nbsp;</p>
+					<p>Given the requirements on data cleaning, you should
+					  not have too many unigrams, but still many enough to
+					  have to use a sparse representation.<br>
+					</p>
+					<h3>Extracting all unigrams using Elastic Search calls</h3>
+					<p>This is no diffeernt than part1 in terms of the ES
+					  calls, but you'd have to first generate a list with
+					  all unigrams.<br> If you dont use ES, this can be a tricky step, but there are python (poor) or java (better) libraries to extract all unigrams from all docs. Keep in mind that extracting all ngrams (say up to n=5) is a difficult problem at scale.  
+					</p>
+					<h3>Training and testing </h3>
+					Once the feature matrices are ready (one for training,
+					the second for testing), run either LibLinear Regression
+					(with sparse input)&nbsp; or a <a href="https://github.com/cheng-li/pyramid">learning
+					  algorithm implemented by us</a> to take advantage of
+					the sparse data representations.<br>
+					<h3>Feature analysis</h3>
+					Identify from the training log/model the top (most
+					important) spam unigrams. Do they match your manual spam
+					features from part 1?<br>
+					<ol>
+					</ol>
+					<h1 id="extra_credit"><br>
+					</h1>
+					<h1 id="extra_credit">Extra Credit</h1>
+					<h2 id="ec5_topic_models">EC1(part1): Test the spam
+					  model on your crawl data from HW3. <br>
+					</h2>
+					<p>Check manually if the top 20 predicted-spam documents
+					  are actually spam.<br>
+					</p>
+					<h2 id="ec5_topic_models">EC2(part2): Extract Bigrams
+					  (besides unigrams) as features<br>
+					</h2>
+					&nbsp;Add not just the unigrams, but all bigrams from
+					training documents<br>
+					<h2 id="ec5_topic_models">EC3(part2): Extract skipgrams
+					  as features<br>
+					</h2>
+					&nbsp; Replace Unigrams and bigrams with general
+					skipgrams (up to length n=4 and slop=2) from training
+					documents
+					<h3 id="rubric">Rubric part1<br>
+					</h3>
+					<dl class="dl-horizontal">
+					  <dt>5 points</dt>
+					  <dd>A reasonable list of spam features</dd>
+					  <dt>15 points</dt>
+					  <dd>ES queries for feature values (separately training
+						set and testing set )<br>
+					  </dd>
+					  <dt>10 points</dt>
+					  <dd>Training the model</dd>
+					  <dt>10 points</dt>
+					  <dd>Run model on testing data and display top spam
+						docs</dd>
+					</dl>
+					<h3 id="rubric">Rubric part 2<br>
+					</h3>
+					<dl class="dl-horizontal">
+					  <dt>15 points</dt>
+					  <dd>A proper SPARSE static matrix setup for feature
+						values and labels including unigrams<br>
+					  </dd>
+					  <dt>15 points</dt>
+					  <dd>ES calls to extract all unigrams feature values<br>
+					  </dd>
+					  <dt>15 points</dt>
+					  <dd>Training successfully a learning algorithm that
+						uses sparse data format </dd>
+					  <dt>15 points</dt>
+					  <dd>Evaluation on test set<br>
+					  </dd>
+					</dl>
+					<dl class="dl-horizontal">
+					</dl>
+				  </article>
+				</div>
+			  </div>
+			</div>
+		  </div>
+	</div>
+	<footer>
+		<hr>
+		<center>
+			Ⓒ Northeastern University, 2020, all rights reserved<br><br>
+		</center>
+	</footer>
+</body>
+
+</html>
